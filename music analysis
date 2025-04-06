@@ -1,0 +1,110 @@
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:audioplayers/audioplayers.dart';
+
+void main() {
+  runApp(MelophileApp());
+}
+
+class MelophileApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Melophile',
+      theme: ThemeData(primarySwatch: Colors.orange),
+      home: MelophileHome(),
+    );
+  }
+}
+
+class MelophileHome extends StatefulWidget {
+  @override
+  _MelophileHomeState createState() => _MelophileHomeState();
+}
+
+class _MelophileHomeState extends State<MelophileHome> {
+  final List<String> moods = [
+    'Happy',
+    'Sad',
+    'Anxious',
+    'Stressed',
+    'Angry',
+    'Insomnia',
+    'Lack of Focus'
+  ];
+  String selectedMood = 'Happy';
+  String musicUrl = '';
+  String notes = '';
+  final player = AudioPlayer();
+
+  Future<void> generateMusic() async {
+    final sampleMusicUrls = {
+      'Happy': 'https://samplelib.com/lib/preview/mp3/sample-3s.mp3',
+      'Sad': 'https://samplelib.com/lib/preview/mp3/sample-6s.mp3',
+      'Anxious': 'https://samplelib.com/lib/preview/mp3/sample-9s.mp3',
+      'Stressed': 'https://samplelib.com/lib/preview/mp3/sample-12s.mp3',
+      'Angry': 'https://samplelib.com/lib/preview/mp3/sample-15s.mp3',
+      'Insomnia': 'https://samplelib.com/lib/preview/mp3/sample-18s.mp3',
+      'Lack of Focus': 'https://samplelib.com/lib/preview/mp3/sample-21s.mp3',
+    };
+
+    final sampleNotes = {
+      'Happy': 'Sa Re Ga Ma',
+      'Sad': 'Ni Sa Dha Pa',
+      'Anxious': 'Re Ga Ma Pa',
+      'Stressed': 'Sa Ma Pa Dha',
+      'Angry': 'Dha Ni Re Sa',
+      'Insomnia': 'Pa Dha Ni Sa',
+      'Lack of Focus': 'Ma Re Sa Ni',
+    };
+
+    setState(() {
+      musicUrl = sampleMusicUrls[selectedMood]!;
+      notes = sampleNotes[selectedMood]!;
+    });
+
+    player.play(UrlSource(musicUrl));
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.orange.shade100,
+      appBar: AppBar(title: Text('Melophile - AI Music & Notes')),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            DropdownButtonFormField<String>(
+              value: selectedMood,
+              onChanged: (value) => setState(() => selectedMood = value!),
+              items: moods.map((mood) {
+                return DropdownMenuItem(value: mood, child: Text(mood));
+              }).toList(),
+              decoration: InputDecoration(labelText: 'Select Your Mood'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: generateMusic,
+              child: Text('Generate Music & Notes'),
+            ),
+            if (musicUrl.isNotEmpty) ...[
+              SizedBox(height: 20),
+              Text("AI-generated Notes:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(notes, style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Text("Playing generated music..."),
+            ]
+          ],
+        ),
+      ),
+    );
+  }
+}
